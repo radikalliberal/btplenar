@@ -152,7 +152,7 @@ DROP TABLE IF EXISTS `btplenar`.`Rolle` ;
 
 CREATE TABLE IF NOT EXISTS `btplenar`.`Rolle` (
   `idRolle` INT NOT NULL,
-  `Rolle_kurz` VARCHAR(45) NULL,
+  `Rolle_kurz` VARCHAR(255) NULL,
   `Rolle_lang` VARCHAR(255) NULL,
   `mandat` INT NULL,
   `ab` DATETIME NULL,

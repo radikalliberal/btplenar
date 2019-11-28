@@ -7,52 +7,51 @@ import scipy.stats as stats
 import math
 
 from BtPlenar import BtPlenar
+conn_settings = {'user': 'root',
+                 'password': '',
+                 'host': '127.0.0.1',
+                 'charset': 'utf8mb4',
+                 'database': 'btplenar'}
 
-cnx = pymysql.connect(user='root',
-                      password='secret',
-                      host='127.0.0.1',
-                      charset='utf8mb4',
-                      database='btplenar')
+with BtPlenar(conn_settings) as btp:
 
-si = BtPlenar(cnx)
+    query = """SELECT MdB.Vorname, MdB.Nachname, mdb.geschlecht, tagesordnungspunkt.thema, Fraktion.name_kurz, COUNT(*) as Beifall,
+    (SELECT COUNT(*) 
+    FROM absatz 
+    LEFT JOIN rede as r
+    ON (r.idRede = Absatz.rede)
+    Where r.idRede = rede.idRede) AS Absätze,
+    SUM(LENGTH(absatz.text) - LENGTH(REPLACE(absatz.text, ' ', '')) + 1) as woerter,  
+    SUM(LENGTH(absatz.text)) as stringlength, 
+    SUM(LENGTH(absatz.text)) / SUM(LENGTH(absatz.text) - LENGTH(REPLACE(absatz.text, ' ', '')) + 1) as avg_word_length
+    FROM Beifall
+    LEFT JOIN (Rede, MdB, Absatz, Mandat, Tagesordnungspunkt, sitzung, Fraktion) 
+    ON (Rede.idRede = Absatz.Rede 
+    AND beifall.Absatz = Absatz.idAbsatz
+    AND Tagesordnungspunkt.idTagesordnungspunkt = Rede.top
+    AND sitzung.idSitzung = Tagesordnungspunkt.sitzung
+    AND Rede.redner = MdB.idMdB
+    AND Mandat.wahlp = sitzung.wahlperiode
+    AND Mandat.MdB = MdB.idMdB
+    AND mandat.fraktion = Fraktion.idFraktion)
+    WHERE Rede.kurzintervention is null
+    AND Rede.antwort_kurzintervention is null
+    AND Tagesordnungspunkt.befragung = 0
+    AND (SELECT COUNT(*) 
+    FROM absatz 
+    LEFT JOIN rede as r
+    ON (r.idRede = Absatz.rede)
+    Where r.idRede = rede.idRede) > 10
+    AND beifall.von = fraktion.idFraktion
+    AND mandat.bis is NULL
+    group by Rede.idRede, Fraktion.idFraktion;"""
+    """having count(*) > 2;"""
 
-query = """SELECT MdB.Vorname, MdB.Nachname, mdb.geschlecht, tagesordnungspunkt.thema, Fraktion.name_kurz, COUNT(*) as Beifall,
-(SELECT COUNT(*) 
-FROM absatz 
-LEFT JOIN rede as r
-ON (r.idRede = Absatz.rede)
-Where r.idRede = rede.idRede) AS Absätze,
-SUM(LENGTH(absatz.text) - LENGTH(REPLACE(absatz.text, ' ', '')) + 1) as woerter,  
-SUM(LENGTH(absatz.text)) as stringlength, 
-SUM(LENGTH(absatz.text)) / SUM(LENGTH(absatz.text) - LENGTH(REPLACE(absatz.text, ' ', '')) + 1) as avg_word_length
-FROM Beifall
-LEFT JOIN (Rede, MdB, Absatz, Mandat, Tagesordnungspunkt, sitzung, Fraktion) 
-ON (Rede.idRede = Absatz.Rede 
-AND beifall.Absatz = Absatz.idAbsatz
-AND Tagesordnungspunkt.idTagesordnungspunkt = Rede.top
-AND sitzung.idSitzung = Tagesordnungspunkt.sitzung
-AND Rede.redner = MdB.idMdB
-AND Mandat.wahlp = sitzung.wahlperiode
-AND Mandat.MdB = MdB.idMdB
-AND mandat.fraktion = Fraktion.idFraktion)
-WHERE Rede.kurzintervention is null
-AND Rede.antwort_kurzintervention is null
-AND Tagesordnungspunkt.befragung = 0
-AND (SELECT COUNT(*) 
-FROM absatz 
-LEFT JOIN rede as r
-ON (r.idRede = Absatz.rede)
-Where r.idRede = rede.idRede) > 10
-AND beifall.von = fraktion.idFraktion
-AND mandat.bis is NULL
-group by Rede.idRede, Fraktion.idFraktion;"""
-"""having count(*) > 2;"""
+    i = 0
 
-i = 0
+    data_arr = []
 
-data_arr = []
-
-raw_data = si.query(query)
+    raw_data = btp.query(query)
 df = pd.DataFrame([raw_data[key] for key in raw_data])
 cols = df.columns
 df.dropna(inplace=True)
@@ -98,7 +97,8 @@ for k, fraktion in enumerate(df['name_kurz'].unique()):
         frame = df.where((df['geschlecht'] == geschlecht) & (df['name_kurz'] == fraktion)).dropna()
         data = frame['Applaus / Wort'].values.astype(float) * 100
         entries, bin_edges, patches = plt.hist(data, bins=int(max_value)*2, range=[-0.25, max_value - 0.25], normed=fitting, alpha=0.5, color=color)
-        if max_y < max(entries): max_y = max(entries)
+        if max_y < max(entries):
+            max_y = max(entries)
         shape, loc, scale = stats.lognorm.fit(entries, floc=0)
 
         # sigma = np.std(np.log(data))

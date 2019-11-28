@@ -52,7 +52,7 @@ with BtPlenar(conn_settings) as btp:
     data_arr = []
 
     raw_data = btp.query(query)
-df = pd.DataFrame([raw_data[key] for key in raw_data])
+df = pd.DataFrame(raw_data)
 cols = df.columns
 df.dropna(inplace=True)
 df['Beifall'] = df['Beifall'].apply(lambda x: x - 1)

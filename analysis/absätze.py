@@ -56,7 +56,6 @@ i = 0
 data_arr = [] 
 
 raw_data = si.query(query)
-raw_data = si.query(query, ['Redeid', 'Mandat', 'Geschlecht', 'Applaus / Rede', 'Fraktion', 'Kinder int', 'Geburtsdatum date'])
 df = pd.DataFrame([raw_data[key] for key in raw_data])
 print(df)
 raw_data = si.query(query2, ['Redeid', 'Absätze', 'Nachname', 'Thema'])

@@ -4,6 +4,7 @@ from tqdm import tqdm
 from util import *
 import pymysql.cursors
 
+
 class BtPlenar():
     def __init__(self, connection):
         self.cnx = pymysql.connect(**connection)
@@ -17,6 +18,11 @@ class BtPlenar():
         self.cnx.close()
 
     def query(self, query):
+        '''
+        querries the db
+        :param query: sql query
+        :return: [result, ...] -> result = {key: val, ...}
+        '''
         self.cursor.execute(query)
         idx = 0
         results = {}
@@ -26,7 +32,7 @@ class BtPlenar():
                 d[field[0]] = val
             results[idx] = d
             idx += 1
-        return results
+        return [results[key] for key in results]
 
     def getFields(self, table):
         query = f"""SELECT `COLUMN_NAME` 

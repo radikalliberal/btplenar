@@ -1,22 +1,16 @@
-import numpy as np
+
 import matplotlib.pyplot as plt
-from matplotlib.gridspec import GridSpec
-import matplotlib as mpl
-from matplotlib.offsetbox import (TextArea, DrawingArea, OffsetImage,
-                                  AnnotationBbox)
 import pandas as pd
-from scipy import stats
-from math import log
 import seaborn as sns; sns.set()
-import pymysql.cursors
-from BtPlenar import BtPlenar
 from datetime import date,timedelta
 
-cnx = pymysql.connect(  user='root', 
-                        password='00qrcCIIan',
-                        host='127.0.0.1',
-                        charset='utf8mb4',
-                        database='btplenar')
+from BtPlenar import BtPlenar
+conn_settings = {'user': 'root',
+                 'password': '',
+                 'host': '127.0.0.1',
+                 'charset': 'utf8mb4',
+                 'database': 'btplenar'}
+
 
 def calculate_age(born):
         if born is None: 
@@ -24,35 +18,35 @@ def calculate_age(born):
         today = date.today()
         return int(today.year - born.year - ((today.month, today.day) < (born.month, born.day)))
 
-si = BtPlenar(cnx)
+with BtPlenar(conn_settings) as btp:
 
-query = """SELECT mandat.art, mdb.geschlecht, COUNT(*), fraktion.name_kurz, mdb.kinder, mdb.geburtsdatum
-        FROM beifall
-        LEFT JOIN (rede, mdb, absatz, mandat, tagesordnungspunkt, sitzung, fraktion) 
-        ON (rede.idrede = absatz.rede 
-        AND beifall.absatz = absatz.idAbsatz
-        AND tagesordnungspunkt.idTagesordnungspunkt = rede.top
-        AND sitzung.idSitzung = tagesordnungspunkt.sitzung
-        AND rede.redner = mdb.idMdB
-        AND mandat.wahlp = sitzung.wahlperiode
-        AND mandat.mdb = mdb.idMdB
-        AND beifall.von = fraktion.idFraktion)
-        WHERE rede.kurzintervention is null
-        AND rede.antwort_kurzintervention is null
-        AND tagesordnungspunkt.befragung = 0
-        group by rede.idrede, fraktion.idfraktion;"""
+    query = """SELECT mandat.art, mdb.geschlecht, COUNT(*), fraktion.name_kurz, mdb.kinder, mdb.geburtsdatum
+FROM beifall
+LEFT JOIN (rede, mdb, absatz, mandat, tagesordnungspunkt, sitzung, fraktion) 
+ON (rede.idrede = absatz.rede 
+AND beifall.absatz = absatz.idAbsatz
+AND tagesordnungspunkt.idTagesordnungspunkt = rede.top
+AND sitzung.idSitzung = tagesordnungspunkt.sitzung
+AND rede.redner = mdb.idMdB
+AND mandat.wahlp = sitzung.wahlperiode
+AND mandat.mdb = mdb.idMdB
+AND beifall.von = fraktion.idFraktion)
+WHERE rede.kurzintervention is null
+AND rede.antwort_kurzintervention is null
+AND tagesordnungspunkt.befragung = 0
+group by rede.idrede, fraktion.idfraktion, mandat.art"""
 
-i = 0
+    i = 0
 
-data_arr = [] 
+    data_arr = []
 
-raw_data = si.query(query, ['Mandat', 'Geschlecht', 'Applaus / Rede', 'Fraktion', 'Kinder int', 'Geburtsdatum date'])
+    raw_data = btp.query(query)
 
 
-df = pd.DataFrame([raw_data[key] for key in raw_data])
+df = pd.DataFrame(raw_data, columns=['Mandat', 'Geschlecht', 'Applaus / Rede', 'Fraktion', 'Kinder int', 'Geburtsdatum date'])
 df['Kinder int'] = df['Kinder int'].fillna(0)
 df.dropna(inplace=True)
-df.loc[df['Kinder int'] == 0 , 'Kinder'] = 'keine'
+df.loc[df['Kinder int'] == 0, 'Kinder'] = 'keine'
 df.loc[(df['Kinder int'] > 0) & (df['Kinder int'] < 3), 'Kinder'] = '0 bis 2'
 df.loc[df['Kinder int'] > 2, 'Kinder'] = 'mehr als 2'
 

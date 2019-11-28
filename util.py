@@ -37,7 +37,7 @@ def get_data():
         stammdaten = '/resource/blob/472878/7d4d417dbb7f7bd44508b3dc5de08ae2/MdB-Stammdaten-data.zip'
         get_xml(base_url + stammdaten)
         with ZipFile('./data/MdB-Stammdaten-data.zip', 'r') as zipObj:
-            zipObj.extractall()
+            zipObj.extractall('./data')
 
     search = base_url + '/ajax/filterlist/de/services/opendata/00000-543410?offset='
     status_code = 200

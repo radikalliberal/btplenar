@@ -1,5 +1,6 @@
 # btplenar
 
+Dieses Programm zieht die erfassten Plenarsitzungen aus dem Bundetag von https://www.bundestag.de/services/opendata runter und pflegt einen großen Teil der Informationen in eine MySql Datenbank ein. 
 
 ## requirements
  mysql server https://dev.mysql.com/downloads/mysql/

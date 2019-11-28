@@ -15,6 +15,11 @@
 main.py:
 
   zieht xml dateien von Sitzungen runter
+  
   pflegt diese in die Datenbank ein
   
+  
+## todo
+  
+  update Sitzungen ohne die komplette Datenbank vorher neu aufzusetzen
   

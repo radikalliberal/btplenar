@@ -10,9 +10,10 @@
  
  Tabellen werden mit mysql/setup.sql generiert werden
  
- ![Database EER Diagram](https://github.com/radikalliberal/btplenar/mysql/dbschema.png)
+ ![Database EER Diagram](mysql/dbschema.png)
 
 main.py:
+
   zieht xml dateien von Sitzungen runter
   pflegt diese in die Datenbank ein
   

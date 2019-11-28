@@ -8,7 +8,7 @@
  
  https://dev.mysql.com/downloads/workbench/ oder https://dbeaver.io/
  
- Tabellen werden mit mysql/setup.sql generiert werden
+ Tabellen werden mit [mysql/setup.sql](mysql/setup.sql) generiert werden
  
  ![Database EER Diagram](mysql/dbschema.png)
 

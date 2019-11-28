@@ -1,4 +1,4 @@
-from BtPlenar import BtPlenar
+from analysis.BtPlenar import BtPlenar
 import xml.etree.ElementTree as ET
 from glob import glob
 from util import *

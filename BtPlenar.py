@@ -1,14 +1,20 @@
 import re
 from datetime import datetime
 from tqdm import tqdm
-
-
-
+from util import *
+import pymysql.cursors
 
 class BtPlenar():
-    def __init__(self, cnx):
-        self.cnx = cnx
-        self.cursor = cnx.cursor()
+    def __init__(self, connection):
+        self.cnx = pymysql.connect(**connection)
+        self.cursor = self.cnx.cursor()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.cursor.close()
+        self.cnx.close()
 
     def query(self, query):
         self.cursor.execute(query)

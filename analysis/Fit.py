@@ -89,7 +89,8 @@ max_value = 16
 mean_claps = {}
 
 for k, fraktion in enumerate(df['name_kurz'].unique()):
-    if fraktion == 'fraktionslos': continue
+    if fraktion == 'fraktionslos':
+        continue
     legend_entries = []
     stat = {}
     for geschlecht, color in zip(['weiblich', 'männlich'], ['r', 'b']):
